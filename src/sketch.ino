@@ -37,7 +37,7 @@ void loop() {
     int movimento = digitalRead(PIN_PIR);             // Lê o estado do sensor de movimento PIR
     int luz = analogRead(PIN_LDR);                    // Lê o valor do sensor de luz LDR
     int duracao_sinal = pulseIn(PIN_HC_ECHO, HIGH);   // Lê o tempo do sinal do sensor ultrassônico HC-SR04
-    float distancia = duracao_sinal/58                // Calcula a distâmcoa do sinal medido pelo sensor ultrassônico HC-SR04 em cm
+    float distancia = duracao_sinal/58;               // Calcula a distância do sinal medido pelo sensor ultrassônico HC-SR04 em cm
 
     // Verificação de erro de leitura do sensor de umidade e temperatura
     if (isnan(umidade) || isnan(temperatura)) {

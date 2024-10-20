@@ -1,49 +1,79 @@
-# Nome do projeto
+#  Sistema Inteligente de Monitoramento Agrícola com ESP32
 ## Objetivo
+O objetivo deste projeto é desenvolver um sistema inteligente de monitoramento agrícola utilizando o microcontrolador ESP32 e sensores diversos. O sistema coletará dados do ambiente em tempo real e tomará decisões automatizadas para otimizar o uso de recursos, como água e luz, em uma área agrícola. O sistema também poderá ser utilizado para segurança e vigilância.
 
-### Sensores utilizados
-#### 1. Sensor de Umidade e Temperatura (DHT22)
+##  **Repositório no GitHub**
+O projeto foi organizado da seguinte forma:
+- `/src`: Diretório contendo os códigos-fonte.
+- `/docs`: Documentação detalhada do sistema e dos sensores.
+- `/tests`: Testes manuais ou automatizados para validação do sistema
+<br> 
+<br>O código foi  comentado para facilitar o entendimento. Cada função e interação com os sensores possui descrições claras, explicando o papel de linha do sistema.
+#### Dependências
+DHT sensor library para o sensor DHT22.
+
+## Sensores utilizados
+#### 1. Sensor de umidade e temperatura (DHT22)
 - **Descrição**: Sensor que mede a temperatura e a umidade do ambiente.
 - **Pinos**:
-  - **VCC**: Conectar ao pino VCC (5V ou 3.3V)
-  - **GND**: Conectar ao pino GND
-  - **Data**: Conectar a um pino digital 
-- **Uso**: Fornece dados críticos para controle de irrigação.
+  - **VCC**: Conectado ao pino de alimentação VCC 5V 
+  - **GND**: Conectado ao pino terra GND 2 
+  - **Data**: Conectado a um pino digital GPIO 23
+- **Uso**: Monitoramento climático. Mede continuamente a umidade e temperatura do ambiente. Com base nesses dados, o sistema pode ajusta a quantidade de agua da irrigação e envia alertas quando as condições climáticas mudam drasticamente.
 
-#### 2. Sensor de Ultrassom (HC-SR04)
+
+#### 2. Sensor de ultrassom (HC-SR04)
 - **Descrição**: Sensor que mede a distância de objetos, usado para monitorar o nível de água.
 - **Pinos**:
-  - **VCC**: Conectar ao pino VCC (5V)
-  - **GND**: Conectar ao pino GND
-  - **Trig**: Conectar ao pino digital 
-  - **Echo**: Conectar ao pino digital 
-- **Uso**: Monitora o nível de água do reservatório, permitindo utilizar a irrigação apenas quando o nível está adequado, evitando desperdício de água.
+  - **VCC**: Conectado ao pino de alimentação VCC 5V
+  - **GND**: Conectado ao pino terra GND 2
+  - **Trig**: Conectado ao pino digital GPIO 5
+  - **Echo**: Conectado ao pino digital GPIO 22
+- **Uso**: Controle de irrigação automatizada. Monitora o nível de água no reservatório, garantindo que a irrigação só seja ativada quando o nível de água for adequado, evitando desperdício.
 
-#### 3. Sensor de Movimento (PIR)
+#### 3. Sensor de movimento (PIR)
 - **Descrição**: Sensor que detecta movimento, útil para segurança e vigilância.
 - **Pinos**:
-  - **VCC**: Conectar ao pino VCC (5V)
-  - **GND**: Conectar ao pino GND
-  - **Out**: Conectar a um pino digital 
-- **Uso**: Detecta presença de animais ou pessoas na fazenda ativando alarmes.
+  - **VCC**: Conectado ao pino de alimentação VCC de 5V
+  - **GND**: Conectado ao pino terra GND 2
+  - **Out**: Conectado a o pino digital GPIO 34
+- **Uso**: Detecção de presença. Monitora a presença de pessoas ou animais durante o período da noite, reportando as atividades para segurança.
 
-#### 4. Sensor de Luz (LDR)
+#### 4. Sensor de luz (LDR)
 - **Descrição**: Resistor dependente de luz que mede a intensidade da luz solar.
 - **Pinos**:
-  - **VCC**: Conectar ao pino VCC (3.3V)
-  - **GND**: Conectar ao pino GND
-  - **AO**: Conectar a um pino analógico (ex: GPIO 34)
-- **Uso**: Ajusta a irrigação automaticamente conforme a luz recebida, diminuindo a quantidade de água em dias mais ensolarados e aumentando em dias nublados.
+  - **VCC**: Conectado ao pino de alimentação VCC 3.3V
+  - **GND**: Conectado ao pino terra GND 2
+  - **AO**: Conectado a o pino analógico GPIO 15
+- **Uso**: Ajuste de irrigação com base na luminosidade. mede Mede a quantidade de luz solar, permitindo que o sistema ajuste automaticamente a quantidade de água usada para irrigação com base na luz recebida pelas plantas, aumentando em dias nublados e reduzindo em dias mais ensolarados.
 
-### Gabarito de cores dos fios
+## Gabarito de cores dos fios
 
-| Função    | Cor do Fio              |
+| Função    | Cor do Fio               |
 |-----------|--------------------------|
 | **VCC**   | Vermelho                 |
-| **GND**   | Preto ou Azul            |
+| **GND**   | Preto                    |
 | **Echo**  | Amarelo                  |
 | **Trig**  | Verde                    |
 | **Out**   | Laranja                  |
-| **SDA**   | Branco ou Azul Claro     |
-| **AO (Analógico)** | Verde Claro ou Azul Claro |
-| **DO (Digital)** | Roxo ou Lilás        |
+| **SDA**   | Branco                   |
+| **AO (Analógico)** |  Azul Claro     |
+| **DO (Digital)** | Roxo              |
+
+
+## Desenho do circuito
+![alt text](desenho_circuito.png)
+
+## Cofigurando o projeto
+
+### 1. **Plataforma de simulação: como configurar e rodar o projeto no Wokwi com o ESP32**
+O projeto pode  ser simulado na plataforma [Wokwi.com](https://wokwi.com/) com o microcontrolador ESP32. O circuito todo foi montado de acordo com as configurações detalhadas nos sensores. 
+- Acesse o [link](https://wokwi.com/projects/412236037188911105) do projeto Wokwi.
+  - Ao abrir o projeto, certifique-se de que todos os sensores estão corretamente conectados conforme o circuito.
+  - Clique em "Start Simulation" para iniciar a simulação.
+  - Acompanhe os dados no Monitor Serial clicando no ícone do monitor para verificar os resultados da leitura dos sensores.
+
+### 2. **Plataforma física: como configurar e rodar o projeto com o ESP32** 
+
+## Testes realizados
+- 20-10-2024  - teste se o código inicial de configuração dos sensores rodava normalmente
