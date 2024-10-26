@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "author": "Anonymous maker",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 9.6, "left": -215.96, "attrs": {} },
+    {
+      "type": "wokwi-dht22",
+      "id": "dht1",
+      "top": -326.1,
+      "left": -111,
+      "attrs": { "temperature": "80", "humidity": "100" }
+    },
+    {
+      "type": "wokwi-hc-sr04",
+      "id": "ultrasonic1",
+      "top": -440.1,
+      "left": -61.7,
+      "attrs": { "distance": "65" }
+    },
+    { "type": "wokwi-pir-motion-sensor", "id": "pir1", "top": -188, "left": 50.22, "attrs": {} },
+    {
+      "type": "wokwi-photoresistor-sensor",
+      "id": "ldr1",
+      "top": -93,
+      "left": 314.8,
+      "rotate": 180,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-lcd1602",
+      "id": "lcd1",
+      "top": 54.4,
+      "left": 255.2,
+      "attrs": { "pins": "i2c" }
+    },
+    { "type": "wokwi-vcc", "id": "vcc1", "top": -152.84, "left": -192, "attrs": {} },
+    { "type": "wokwi-gnd", "id": "gnd1", "top": -240, "left": 239.4, "attrs": {} },
+    { "type": "wokwi-gnd", "id": "gnd2", "top": -201.6, "left": -10.2, "attrs": {} },
+    { "type": "wokwi-gnd", "id": "gnd3", "top": -67.2, "left": 114.6, "attrs": {} },
+    { "type": "wokwi-vcc", "id": "vcc2", "top": -76.04, "left": 220.8, "attrs": {} },
+    { "type": "wokwi-gnd", "id": "gnd4", "top": -19.2, "left": 335.4, "attrs": {} }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "dht1:SDA", "esp:23", "white", [ "v19.2", "h67.3", "v105.6" ] ],
+    [ "pir1:VCC", "esp:5V", "red", [ "v336", "h-297.75" ] ],
+    [ "pir1:OUT", "esp:15", "orange", [ "v0" ] ],
+    [ "ultrasonic1:TRIG", "esp:5", "purple", [ "v0" ] ],
+    [ "esp:34", "ldr1:AO", "cyan", [ "h-47.85", "v-96", "h441.6", "v-58.3" ] ],
+    [ "lcd1:SDA", "esp:19", "blue", [ "v0.2", "h-374.4" ] ],
+    [ "lcd1:SCL", "esp:18", "green", [ "v0.3", "h-374.4" ] ],
+    [ "dht1:VCC", "vcc1:VCC", "red", [ "v0" ] ],
+    [ "ultrasonic1:VCC", "vcc1:VCC", "red", [ "v0", "h-144", "v163.2" ] ],
+    [ "dht1:GND", "gnd2:GND", "black", [ "v0" ] ],
+    [ "ultrasonic1:GND", "gnd1:GND", "black", [ "v0" ] ],
+    [ "pir1:GND", "gnd3:GND", "black", [ "v0" ] ],
+    [ "ldr1:VCC", "vcc2:VCC", "red", [ "h-19.2", "v48" ] ],
+    [ "ldr1:GND", "gnd4:GND", "black", [ "h0" ] ],
+    [ "lcd1:VCC", "vcc2:VCC", "red", [ "h0" ] ],
+    [ "lcd1:GND", "gnd4:GND", "black", [ "v-19.2", "h124.8" ] ],
+    [ "ultrasonic1:ECHO", "esp:22", "yellow", [ "v0" ] ]
+  ],
+  "dependencies": {}
+}
