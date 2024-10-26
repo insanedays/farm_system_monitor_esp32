@@ -124,6 +124,3 @@ void loop() {
     lux();                  // Monitora a luminosidade
     movi();                 // Detecta movimento
 }
-
-git config --global user.email "kild_bf@hotmail.com"
-git config --global user.name "KildFernandes"
