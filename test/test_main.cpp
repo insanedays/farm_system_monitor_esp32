@@ -1,4 +1,4 @@
-#define UNIT_TEST
+// test_main.cpp
 #include "main.h"
 
 // Mock implementations for sensor functions

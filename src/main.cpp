@@ -1,16 +1,17 @@
 #include "main.h"
 
-// WiFi credentials
+#ifndef UNIT_TEST
+// WiFi credentials and global objects
 const char* SSID = "Wokwi-GUEST";
 const char* PASSWORD = "";
 const char* BROKER_MQTT = "mqtt-dashboard.com";
 int BROKER_PORT = 1883;
 
-// Global objects
 WiFiClient wifiClient;
 PubSubClient MQTT(wifiClient);
 DHT dht22(PIN_DHT, DHT_MODEL);
 LiquidCrystal_I2C lcd(0x27, 16, 2);
+#endif
 
 // Function to send values via MQTT
 void EnviaValores(const char* topic, float value1, float value2) {
@@ -23,6 +24,7 @@ void EnviaValores(const char* topic, float value1, float value2) {
     MQTT.publish(topic, jsonBuffer);
 }
 
+#ifndef UNIT_TEST
 // Function to measure and display temperature and humidity
 void humidity_temperature() {
     float umidade = dht22.readHumidity();
@@ -85,6 +87,7 @@ void movi() {
     EnviaValores(pubSensorMovi, movimento);
     delay(2000);
 }
+#endif
 
 // Function to update WiFi and MQTT connections
 void AtualizaConexoes() {
@@ -136,6 +139,7 @@ void RecebePacote(char* topic, byte* payload, unsigned int length) {
     Serial.println(msg);
 }
 
+#ifndef UNIT_TEST
 // Initial setup
 void setup() {
     Serial.begin(9600);
@@ -163,3 +167,4 @@ void loop() {
     lux();
     movi();
 }
+#endif

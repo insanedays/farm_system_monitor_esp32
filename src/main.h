@@ -1,15 +1,32 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+#ifdef UNIT_TEST
+// Mock includes
+#include "mock_Arduino.h"
+#include "mock_Serial.h"
+#include "mock_DHT.h"
+#include "mock_Wire.h"
+#include "mock_LiquidCrystal_I2C.h"
+#include "mock_WiFi.h"
+#include "mock_WiFiClient.h"
+#include "mock_PubSubClient.h"
+#include "mock_ArduinoJson.h"
+#include "mock_Adafruit_Sensor.h"
+#else
+// Actual includes
+#include <Arduino.h>
 #include <DHT.h>
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <WiFi.h>
+#include <WiFiClient.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 #include <Adafruit_Sensor.h>
+#endif
 
-// Pin definitions
+// Pin definitions and other code remains the same
 #define PIN_DHT 23
 #define DHT_MODEL DHT22
 #define PIN_PIR 15
@@ -47,7 +64,5 @@ void humidity_temperature();
 void sound();
 void lux();
 void movi();
-
-
 
 #endif // MAIN_H

@@ -1,6 +1,13 @@
-#define UNIT_TEST
 #include <unity.h>
 #include "test_main.cpp"
+
+#ifndef HIGH
+#define HIGH 1
+#endif
+
+#ifndef LOW
+#define LOW 0
+#endif
 
 // Mock variables for testing hardware functions
 float mockHumidity = 0.0;
@@ -8,6 +15,7 @@ float mockTemperature = 0.0;
 long mockPulseDuration = 0;
 int mockDigitalValue = 0;
 int mockAnalogValue = 0;
+
 
 // Mock functions
 float dht22_readHumidity() { return mockHumidity; }
