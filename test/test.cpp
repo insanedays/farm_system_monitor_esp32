@@ -1,5 +1,7 @@
 #include <unity.h>
-#include "mock_Serial.h"
+
+#define PIN_DHT 23
+#define DHT_MODEL DHT22
 
 #ifndef HIGH
 #define HIGH 1
@@ -10,43 +12,41 @@
 #endif
 
 // Mock variables for testing hardware functions
-float mockHumidity = 0.0;
-float mockTemperature = 0.0;
-long mockPulseDuration = 0;
+float mockHumidity = 60.0;
+float mockTemperature = 25.5;
+float mockHumidityNan = 00.0;
+float mockTemperatureNan = 00.0;
+long mockPulseDuration = 1000;
 int mockDigitalValue = 0;
-int mockAnalogValue = 0;
+int mockAnalogValue = 2048;
 
 // Mock functions
 float dht22_readHumidity() { return mockHumidity; }
 float dht22_readTemperature() { return mockTemperature; }
 long pulseIn(int pin, int state) { return mockPulseDuration; }
-int digitalRead(int pin) { return mockDigitalValue; }
 int analogRead(int pin) { return mockAnalogValue; }
 void digitalWrite(int pin, int value) {}
 
+void test_humidity_temperature_success() {
+    TEST_ASSERT_EQUAL_FLOAT(60.0, dht22_readHumidity());
+    TEST_ASSERT_EQUAL_FLOAT(25.5, dht22_readTemperature());
+}
 // Testes para os sensores
 void test_humidity_temperature_error() {
-    mockHumidity = NAN;
-    mockTemperature = NAN;
-    TEST_ASSERT_TRUE(isnan(mockHumidity));
-    TEST_ASSERT_TRUE(isnan(mockTemperature));
+    mockHumidityNan = NAN;
+    mockTemperatureNan = NAN;
+    TEST_ASSERT_TRUE(isnan(mockHumidityNan));
+    TEST_ASSERT_TRUE(isnan(mockTemperatureNan));
 }
 
-void test_humidity_temperature_success() {
-    mockHumidity = 60.0;
-    mockTemperature = 25.5;
-    TEST_ASSERT_EQUAL_FLOAT(60.0, mockHumidity);
-    TEST_ASSERT_EQUAL_FLOAT(25.5, mockTemperature);
-}
+
 
 void test_sound_sensor_measurement() {
-    mockPulseDuration = 1000;
-    TEST_ASSERT_EQUAL(1000, mockPulseDuration);
+    TEST_ASSERT_EQUAL_FLOAT(1000, pulseIn(1,1));
 }
 
 void test_lux_sensor_measurement() {
-    mockAnalogValue = 2048;
-    TEST_ASSERT_EQUAL(2048, mockAnalogValue);
+    TEST_ASSERT_EQUAL(2048, analogRead(1));
 }
 
 void test_motion_detected() {

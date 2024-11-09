@@ -4,9 +4,9 @@
 
 #include <cstdint>
 
-class DHT {
+class Sensor {
 public:
-    DHT(uint8_t pin, uint8_t type) {
+    Sensor(uint8_t pin, uint8_t type) {
         // Constructor mock
     }
 
