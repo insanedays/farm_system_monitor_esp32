@@ -129,14 +129,11 @@ void ConectaMQTT() {
 
 // Callback to receive MQTT packets
 void RecebePacote(char* topic, byte* payload, unsigned int length) {
-    String msg;
-    for (int i = 0; i < length; i++) {
-        msg += (char)payload[i];
+    std::string msg;
+    for (unsigned int i = 0; i < length; i++) {
+        msg += static_cast<char>(payload[i]);
     }
-    Serial.print("Mensagem recebida [");
-    Serial.print(topic);
-    Serial.print("]: ");
-    Serial.println(msg);
+    Serial.println(msg.c_str());
 }
 
 #ifndef UNIT_TEST
@@ -166,5 +163,16 @@ void loop() {
     sound();
     lux();
     movi();
+}
+#endif
+
+
+#ifdef NATIVE
+int main() {
+    setup();
+    while (true) {
+        loop();
+    }
+    return 0;
 }
 #endif

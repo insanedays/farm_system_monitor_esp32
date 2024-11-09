@@ -1,4 +1,3 @@
-// test/mocks/mock_ArduinoJson.h
 #ifndef MOCK_ARDUINOJSON_H
 #define MOCK_ARDUINOJSON_H
 
@@ -9,26 +8,19 @@
 
 class DynamicJsonDocument {
 public:
-    DynamicJsonDocument(size_t capacity) {
-        // Constructor mock
-    }
-
+    DynamicJsonDocument(size_t capacity) {}
     std::map<std::string, float> data;
-
     float& operator[](const char* key) {
         return data[key];
     }
 };
 
-size_t serializeJson(DynamicJsonDocument& doc, char* output) {
-    // Simple mock implementation
+inline size_t serializeJson(const DynamicJsonDocument& doc, char* output) {
     std::ostringstream oss;
     oss << "{";
     bool first = true;
     for (const auto& pair : doc.data) {
-        if (!first) {
-            oss << ", ";
-        }
+        if (!first) oss << ", ";
         oss << "\"" << pair.first << "\": " << pair.second;
         first = false;
     }

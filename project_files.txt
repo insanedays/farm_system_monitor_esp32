@@ -1,0 +1,390 @@
+[env:esp32dev]
+platform = espressif32
+board = esp32dev
+framework = arduino
+lib_deps = 
+    adafruit/DHT sensor library
+    marcoschwartz/LiquidCrystal_I2C@^1.1.4
+    bblanchon/ArduinoJson@^7.2.0
+    knolleary/PubSubClient@^2.8
+
+[env:test_native]
+platform = native
+build_flags = 
+    -DUNIT_TEST
+    -I test/mocks
+lib_extra_dirs = test/mocks
+lib_ignore = 
+    adafruit/DHT sensor library
+    marcoschwartz/LiquidCrystal_I2C
+    bblanchon/ArduinoJson
+    knolleary/PubSubClient
+#include "main.h"
+
+#ifndef UNIT_TEST
+// WiFi credentials and global objects
+const char* SSID = "Wokwi-GUEST";
+const char* PASSWORD = "";
+const char* BROKER_MQTT = "mqtt-dashboard.com";
+int BROKER_PORT = 1883;
+
+WiFiClient wifiClient;
+PubSubClient MQTT(wifiClient);
+DHT dht22(PIN_DHT, DHT_MODEL);
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+#endif
+
+// Function to send values via MQTT
+void EnviaValores(const char* topic, float value1, float value2) {
+    DynamicJsonDocument doc(200);
+    if (value1 != 0) doc["value1"] = value1;
+    if (value2 != 0) doc["value2"] = value2;
+
+    char jsonBuffer[512];
+    serializeJson(doc, jsonBuffer);
+    MQTT.publish(topic, jsonBuffer);
+}
+
+#ifndef UNIT_TEST
+// Function to measure and display temperature and humidity
+void humidity_temperature() {
+    float umidade = dht22.readHumidity();
+    float temperatura = dht22.readTemperature();
+    if (isnan(umidade) || isnan(temperatura)) {
+        lcd.clear();
+        lcd.print("Erro no sensor DHT");
+    } else {
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("Temp: ");
+        lcd.print(temperatura);
+        lcd.setCursor(0, 1);
+        lcd.print("Umid: ");
+        lcd.print(umidade);
+    }
+    EnviaValores(pubSensorHumidity, umidade, temperatura);
+    delay(2000);
+}
+
+// Function to measure and display water level
+void sound() {
+    digitalWrite(PIN_HC_TRIG, LOW);
+    delayMicroseconds(2);
+    digitalWrite(PIN_HC_TRIG, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(PIN_HC_TRIG, LOW);
+    long duration = pulseIn(PIN_HC_ECHO, HIGH);
+    float distanceCm = duration * SOUND_SPEED / 2;
+    lcd.clear();
+    lcd.print("Nivel Agua:");
+    lcd.setCursor(0, 1);
+    lcd.print(distanceCm);
+    EnviaValores(pubSensorSound, distanceCm);
+    delay(2000);
+}
+
+// Function to measure and display light intensity
+void lux() {
+    int analogValue = analogRead(PIN_LDR);
+    float voltage = analogValue / 4095.0 * 3.3;
+    float lux = 500 / (3.3 - voltage);
+    lcd.clear();
+    lcd.print("Luminosidade:");
+    lcd.setCursor(0, 1);
+    lcd.print(lux);
+    EnviaValores(pubSensorLux, lux);
+    delay(2000);
+}
+
+// Function to detect and display motion
+void movi() {
+    int movimento = digitalRead(PIN_PIR);
+    lcd.clear();
+    if (movimento == HIGH) {
+        lcd.print("Movimento detectado");
+    } else {
+        lcd.print("Nenhum movimento");
+    }
+    EnviaValores(pubSensorMovi, movimento);
+    delay(2000);
+}
+#endif
+
+// Function to update WiFi and MQTT connections
+void AtualizaConexoes() {
+    if (!MQTT.connected()) {
+        ConectaMQTT();
+    }
+    ConectaWiFi();
+}
+
+// Function to connect to WiFi
+void ConectaWiFi() {
+    if (WiFi.status() == WL_CONNECTED) return;
+    Serial.print("Conectando-se na rede: ");
+    Serial.print(SSID);
+    WiFi.begin(SSID, PASSWORD);
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(100);
+        Serial.print(".");
+    }
+    Serial.println();
+    Serial.print("Conectado com sucesso, na rede: ");
+    Serial.println(WiFi.localIP());
+}
+
+// Function to connect to MQTT broker
+void ConectaMQTT() {
+    while (!MQTT.connected()) {
+        Serial.print("Conectando ao Broker MQTT: ");
+        Serial.println(BROKER_MQTT);
+        if (MQTT.connect(ID_MQTT)) {
+            Serial.println("Conectado ao Broker com sucesso!");
+            MQTT.subscribe(pubSensorMovi);
+        } else {
+            Serial.println("Falha de conexao, tentativa em 10s");
+            delay(10000);
+        }
+    }
+}
+
+// Callback to receive MQTT packets
+void RecebePacote(char* topic, byte* payload, unsigned int length) {
+    std::string msg;
+    for (unsigned int i = 0; i < length; i++) {
+        msg += static_cast<char>(payload[i]);
+    }
+    Serial.println(msg.c_str());
+}
+
+#ifndef UNIT_TEST
+// Initial setup
+void setup() {
+    Serial.begin(9600);
+    dht22.begin();
+    Wire.begin(19, 18);
+    lcd.init();
+    lcd.backlight();
+
+    pinMode(PIN_PIR, INPUT);
+    pinMode(PIN_LDR, INPUT);
+    pinMode(PIN_HC_TRIG, OUTPUT);
+    pinMode(PIN_HC_ECHO, INPUT);
+
+    ConectaWiFi();
+    MQTT.setServer(BROKER_MQTT, BROKER_PORT);
+    MQTT.setCallback(RecebePacote);
+}
+
+// Main loop
+void loop() {
+    AtualizaConexoes();
+    MQTT.loop();
+    humidity_temperature();
+    sound();
+    lux();
+    movi();
+}
+#endif
+
+
+#ifdef NATIVE
+int main() {
+    setup();
+    while (true) {
+        loop();
+    }
+    return 0;
+}
+#endif#ifndef MAIN_H
+#define MAIN_H
+
+#ifdef UNIT_TEST
+// Inclua os mocks no ambiente de teste
+#include "mock_Serial.h"
+#include "mock_WiFi.h"
+#include "mock_MQTT.h"
+#include "mock_DHT.h"
+#include "mock_LiquidCrystal_I2C.h"
+typedef unsigned char byte;
+#else
+// Inclua as bibliotecas reais para o ESP32
+#include <Arduino.h>
+#include <WiFi.h>
+#include <PubSubClient.h>
+#include <DHT.h>
+#include <LiquidCrystal_I2C.h>
+#include <ArduinoJson.h>
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+
+extern HardwareSerial Serial;
+extern WiFiClass WiFi;
+extern PubSubClient MQTT;
+#endif
+
+// Definições de pinos e outras configurações
+#define PIN_DHT 23
+#define DHT_MODEL DHT22
+#define PIN_PIR 15
+#define PIN_LDR 34
+#define PIN_HC_TRIG 5
+#define PIN_HC_ECHO 22
+#define SOUND_SPEED 0.034
+#define ID_MQTT "FIAP_CAP12"
+#define pubSensorHumidity "humidity_temperature"
+#define pubSensorSound "sound"
+#define pubSensorLux "lux"
+#define pubSensorMovi "movi"
+
+// Credenciais WiFi
+extern const char* SSID;
+extern const char* PASSWORD;
+extern const char* BROKER_MQTT;
+extern int BROKER_PORT;
+
+// Objetos globais
+extern DHT dht22;
+extern LiquidCrystal_I2C lcd;
+
+// Funções globais
+void AtualizaConexoes();
+void ConectaWiFi();
+void ConectaMQTT();
+void EnviaValores(const char* topic, float value1, float value2 = 0);
+void RecebePacote(char* topic, byte* payload, unsigned int length);
+void humidity_temperature();
+void sound();
+void lux();
+void movi();
+
+#endif // MAIN_H
+
+This directory is intended for PlatformIO Test Runner and project tests.
+
+Unit Testing is a software testing method by which individual units of
+source code, sets of one or more MCU program modules together with associated
+control data, usage procedures, and operating procedures, are tested to
+determine whether they are fit for use. Unit testing finds problems early
+in the development cycle.
+
+More information about PlatformIO Unit Testing:
+- https://docs.platformio.org/en/latest/advanced/unit-testing/index.html
+#include <unity.h>
+#include "test_main.cpp"
+// test.cpp
+#ifndef ARDUINO
+// Remova essas linhas
+// SerialMock Serial;
+// WiFiMock WiFi;
+// MQTTMock MQTT;
+#endif
+
+#ifndef HIGH
+#define HIGH 1
+#endif
+
+#ifndef LOW
+#define LOW 0
+#endif
+
+#ifndef ARDUINO
+struct SerialMock {
+    void begin(int) {}
+    void println(const char*) {}
+};
+SerialMock Serial;
+
+struct WiFiMock {
+    void connect(const char*, const char*) {}
+};
+WiFiMock WiFi;
+
+struct MQTTMock {
+    void publish(const char*, const char*) {}
+};
+MQTTMock MQTT;
+#endif
+
+
+// Mock variables for testing hardware functions
+float mockHumidity = 0.0;
+float mockTemperature = 0.0;
+long mockPulseDuration = 0;
+int mockDigitalValue = 0;
+int mockAnalogValue = 0;
+
+
+// Mock functions
+float dht22_readHumidity() { return mockHumidity; }
+float dht22_readTemperature() { return mockTemperature; }
+long pulseIn(int pin, int state) { return mockPulseDuration; }
+int digitalRead(int pin) { return mockDigitalValue; }
+int analogRead(int pin) { return mockAnalogValue; }
+void digitalWrite(int pin, int value) {}
+void lcdPrint(const char* message) { Serial.println(message); }
+void EnviaValores(const char* topic, float value1, float value2) {
+    Serial.printf("Mock EnviaValores - Topic: %s, Value1: %.2f, Value2: %.2f\n", topic, value1, value2);
+}
+
+// Tests
+void test_humidity_temperature_error() {
+    mockHumidity = NAN;
+    mockTemperature = NAN;
+    humidity_temperature();
+}
+
+void test_humidity_temperature_success() {
+    mockHumidity = 60.0;
+    mockTemperature = 25.5;
+    humidity_temperature();
+    TEST_ASSERT_EQUAL_FLOAT(60.0, mockHumidity);
+    TEST_ASSERT_EQUAL_FLOAT(25.5, mockTemperature);
+}
+
+void test_sound_sensor_measurement() {
+    mockPulseDuration = 1000;
+    sound();
+}
+
+void test_lux_sensor_measurement() {
+    mockAnalogValue = 2048;
+    lux();
+}
+
+void test_motion_detected() {
+    mockDigitalValue = HIGH;
+    movi();
+}
+
+void test_no_motion_detected() {
+    mockDigitalValue = LOW;
+    movi();
+}
+
+// Run all tests
+void runTests() {
+    UNITY_BEGIN();
+    RUN_TEST(test_humidity_temperature_error);
+    RUN_TEST(test_humidity_temperature_success);
+    RUN_TEST(test_sound_sensor_measurement);
+    RUN_TEST(test_lux_sensor_measurement);
+    RUN_TEST(test_motion_detected);
+    RUN_TEST(test_no_motion_detected);
+    UNITY_END();
+}
+
+void setup() {
+    Serial.begin(9600);
+    runTests();
+}
+
+void loop() {}
+// test_main.cpp
+#include "main.h"
+
+extern void serializeJson(DynamicJsonDocument&, char*);
+extern void humidity_temperature();
+extern void sound();
+extern void lux();
+extern void movi();

@@ -2,31 +2,40 @@
 #define MAIN_H
 
 #ifdef UNIT_TEST
-// Mock includes
-#include "mock_Arduino.h"
-#include "mock_Serial.h"
-#include "mock_DHT.h"
-#include "mock_Wire.h"
-#include "mock_LiquidCrystal_I2C.h"
-#include "mock_WiFi.h"
-#include "mock_WiFiClient.h"
-#include "mock_PubSubClient.h"
 #include "mock_ArduinoJson.h"
-#include "mock_Adafruit_Sensor.h"
 #else
-// Actual includes
-#include <Arduino.h>
-#include <DHT.h>
-#include <Wire.h>
-#include <LiquidCrystal_I2C.h>
-#include <WiFi.h>
-#include <WiFiClient.h>
-#include <PubSubClient.h>
 #include <ArduinoJson.h>
-#include <Adafruit_Sensor.h>
 #endif
 
-// Pin definitions and other code remains the same
+#ifdef UNIT_TEST
+#include "mock_Arduino.h"
+#endif
+
+#ifdef UNIT_TEST
+// Inclua os mocks no ambiente de teste
+#include "mock_Serial.h"
+#include "mock_WiFi.h"
+#include "mock_MQTT.h"
+#include "mock_DHT.h"
+#include "mock_LiquidCrystal_I2C.h"
+typedef unsigned char byte;
+#else
+// Inclua as bibliotecas reais para o ESP32
+#include <Arduino.h>
+#include <WiFi.h>
+#include <PubSubClient.h>
+#include <DHT.h>
+#include <LiquidCrystal_I2C.h>
+#include <ArduinoJson.h>
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+
+extern HardwareSerial Serial;
+extern WiFiClass WiFi;
+extern PubSubClient MQTT;
+#endif
+
+// Definições de pinos e outras configurações
 #define PIN_DHT 23
 #define DHT_MODEL DHT22
 #define PIN_PIR 15
@@ -40,26 +49,24 @@
 #define pubSensorLux "lux"
 #define pubSensorMovi "movi"
 
-// WiFi credentials
+
+
+// Credenciais WiFi
 extern const char* SSID;
 extern const char* PASSWORD;
 extern const char* BROKER_MQTT;
 extern int BROKER_PORT;
 
-// Global objects
-extern WiFiClient wifiClient;
-extern PubSubClient MQTT;
+// Objetos globais
 extern DHT dht22;
 extern LiquidCrystal_I2C lcd;
 
-// Function declarations
+// Funções globais
 void AtualizaConexoes();
 void ConectaWiFi();
 void ConectaMQTT();
 void EnviaValores(const char* topic, float value1, float value2 = 0);
 void RecebePacote(char* topic, byte* payload, unsigned int length);
-
-// Sensor functions
 void humidity_temperature();
 void sound();
 void lux();

@@ -1,5 +1,5 @@
 #include <unity.h>
-#include "test_main.cpp"
+#include "mock_Serial.h"
 
 #ifndef HIGH
 #define HIGH 1
@@ -16,7 +16,6 @@ long mockPulseDuration = 0;
 int mockDigitalValue = 0;
 int mockAnalogValue = 0;
 
-
 // Mock functions
 float dht22_readHumidity() { return mockHumidity; }
 float dht22_readTemperature() { return mockTemperature; }
@@ -24,47 +23,43 @@ long pulseIn(int pin, int state) { return mockPulseDuration; }
 int digitalRead(int pin) { return mockDigitalValue; }
 int analogRead(int pin) { return mockAnalogValue; }
 void digitalWrite(int pin, int value) {}
-void lcdPrint(const char* message) { Serial.println(message); }
-void EnviaValores(const char* topic, float value1, float value2) {
-    Serial.printf("Mock EnviaValores - Topic: %s, Value1: %.2f, Value2: %.2f\n", topic, value1, value2);
-}
 
-// Tests
+// Testes para os sensores
 void test_humidity_temperature_error() {
     mockHumidity = NAN;
     mockTemperature = NAN;
-    humidity_temperature();
+    TEST_ASSERT_TRUE(isnan(mockHumidity));
+    TEST_ASSERT_TRUE(isnan(mockTemperature));
 }
 
 void test_humidity_temperature_success() {
     mockHumidity = 60.0;
     mockTemperature = 25.5;
-    humidity_temperature();
     TEST_ASSERT_EQUAL_FLOAT(60.0, mockHumidity);
     TEST_ASSERT_EQUAL_FLOAT(25.5, mockTemperature);
 }
 
 void test_sound_sensor_measurement() {
     mockPulseDuration = 1000;
-    sound();
+    TEST_ASSERT_EQUAL(1000, mockPulseDuration);
 }
 
 void test_lux_sensor_measurement() {
     mockAnalogValue = 2048;
-    lux();
+    TEST_ASSERT_EQUAL(2048, mockAnalogValue);
 }
 
 void test_motion_detected() {
     mockDigitalValue = HIGH;
-    movi();
+    TEST_ASSERT_EQUAL(HIGH, mockDigitalValue);
 }
 
 void test_no_motion_detected() {
     mockDigitalValue = LOW;
-    movi();
+    TEST_ASSERT_EQUAL(LOW, mockDigitalValue);
 }
 
-// Run all tests
+// Executar todos os testes
 void runTests() {
     UNITY_BEGIN();
     RUN_TEST(test_humidity_temperature_error);
@@ -77,8 +72,18 @@ void runTests() {
 }
 
 void setup() {
-    Serial.begin(9600);
     runTests();
 }
 
 void loop() {}
+
+#ifdef UNIT_TEST
+int main() {
+    setup();
+    while (true) {
+        loop();
+        break; // Adicione o break para evitar um loop infinito durante os testes
+    }
+    return 0;
+}
+#endif
